@@ -4,15 +4,23 @@ const
   fs     =  require('fs'),
   stream =  require('stream'),
   path   =  require('path')
+,
+  callingModulePath = path.dirname(module.parent.filename)
 ;
+
+function toWritable (handle) {
+  if (handle instanceof stream.Writable) {
+    return handle
+  } else {
+    return fs.createWriteStream(path.resolve(callingModulePath, handle), { flags: 'a' }) 
+  }
+}
 
 class Log extends console.Console {
   constructor (_out, _err) {
-    const callingModulePath = path.dirname(module.parent.filename)
-    super(
-      _out instanceof stream.Writable ? _out : fs.createWriteStream(path.resolve(callingModulePath, _out)), 
-      _err instanceof stream.Writable ? _err : fs.createWriteStream(path.resolve(callingModulePath, _err))
-    )    
+    const out = toWritable(_out)
+    const err = toWritable(_err)
+    super(out, err)
   }
   log (...args) {
     args.unshift('LOG: ')
