@@ -9,17 +9,18 @@ const
 
 let logl = 0 // no logging by default
 
-function toWritable (handle) {
+function toWritable (handle, rotate) {
   if (handle instanceof stream.Writable) {
     return handle
   } else {
-    return fs.createWriteStream(handle, { flags: 'a' }) 
+    return fs.createWriteStream(handle, { flags: rotate ? 'w' : 'a' }) 
   }
 }
 
 class Log extends console.Console {
-  constructor (out, err) {
-    super(toWritable(out), err ? toWritable(err) : undefined)
+  constructor (out, err, { rotate = false } = {}) {
+    // handle optional second parameter (separate file for stderr)
+    super(toWritable(out, rotate), err ? toWritable(err, rotate) : undefined)
   }
   common (level, prefix, method, ...args) {
     // log-write-instant-specific options
