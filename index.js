@@ -3,6 +3,8 @@
 const 
   fs     =  require('fs'),
   stream =  require('stream')
+,
+  timezoneOffset = (new Date()).getTimezoneOffset() * 60000
 ;
 
 let logl = 0 // no logging by default
@@ -19,29 +21,29 @@ class Log extends console.Console {
   constructor (out, err) {
     super(toWritable(out), err ? toWritable(err) : undefined)
   }
-  log (...args) {
+  common (level, prefix, method, ...args) {
+    // log-write-instant-specific options
+    // date is prepended to every log write by default
+    let options = { date: true }
+    if (typeof args[args.length-1] === 'object') {
+      Object.assign(options, args.pop())
+    }
     process.env.DEBUG && console.log(...args)
-    if (logl < 1) return
-    args.unshift('L ')
-    super.log(...args)
+    if (logl < level) return
+    args.unshift(prefix, options.date ? new Date(Date.now() - timezoneOffset).toISOString() : '')
+    super[method](...args)
+  }
+  log (...args) {
+    this.common(1, 'L', 'log', ...args)
   }
   info (...args) {
-    process.env.DEBUG && console.info(...args)
-    if (logl < 2) return
-    args.unshift('I ')
-    super.info(...args)
+    this.common(2, 'I', 'info', ...args)
   }
   error (...args) {
-    process.env.DEBUG && console.error(...args)
-    if (logl < 3) return
-    args.unshift('E ')
-    super.error(...args)
+    this.common(3, 'E', 'error', ...args)
   }
   warn (...args) {
-    process.env.DEBUG && console.warn(...args)
-    if (logl < 4) return
-    args.unshift('W ')
-    super.warn(...args)
+    this.common(4, 'W', 'warn', ...args)
   }
 }
 
