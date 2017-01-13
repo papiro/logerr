@@ -10,7 +10,7 @@ const
 
 let logl, root
 
-function toWritable (handle, rotate) {
+function toWritable (handle, { rotate = false }) {
   if (handle instanceof stream.Writable) {
     return handle
   } else {
@@ -22,12 +22,17 @@ function toWritable (handle, rotate) {
 }
 
 class Log extends console.Console {
-  constructor (out, err, { rotate = false } = {}) {
+  constructor (out, err, options = {}) {
+    // log instant-specific options
+    if (typeof err !== 'string' && !( err instanceof stream.Writable )) {
+      options = err 
+      err = undefined
+    }
     // handle optional second parameter (separate file for stderr)
-    super(toWritable(out, rotate), err ? toWritable(err, rotate) : undefined)
+    super(toWritable(out, options), err ? toWritable(err, options) : undefined)
   }
   common (level, prefix, method, ...args) {
-    // log-write-instant-specific options
+    // log-write instant-specific options
     // date is prepended to every log write by default
     let options = { date: true }
     if (typeof args[args.length-1] === 'object') {
