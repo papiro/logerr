@@ -43,6 +43,9 @@ class Log extends console.Console {
     args.unshift(prefix, options.date ? new Date(Date.now() - timezoneOffset).toISOString() : '')
     super[method](...args)
   }
+  debug (...args) {
+    process.env.DEBUG && console.log(...args) 
+  }
   log (...args) {
     this.common(1, 'L', 'log', ...args)
   }
