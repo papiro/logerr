@@ -1,20 +1,18 @@
 'use strict'
 
 const 
-  fs     =  require('fs'),
-  stream =  require('stream'),
-  path   =  require('path')
+  fs = require('fs'), stream = require('stream'), path = require('path'), util = require('util')
 ,
   timezoneOffset = (new Date()).getTimezoneOffset() * 60000
 ;
 
 let logl, root
 
-function toWritable (handle, { rotate = false }) {
+function toWritable (handle) {
   if (handle instanceof stream.Writable) {
     return handle
   } else {
-    return fs.createWriteStream(path.resolve(root, handle), { flags: rotate ? 'w' : 'a' }) 
+    return fs.createWriteStream(path.resolve(root, handle), { flags: 'a' }) 
       .on('error', err => {
         throw err
       })
@@ -23,16 +21,25 @@ function toWritable (handle, { rotate = false }) {
 
 class Log extends console.Console {
   constructor (out, err, options = {}) {
-    // log instant-specific options
+    // options specific to this log
     if (typeof err !== 'string' && !( err instanceof stream.Writable )) {
       options = err 
       err = undefined
     }
+    if (!options.namespace || typeof options.namespace !== 'string') {
+      throw new Error(`log for ${out} missing a valid <String> namespace for util.debuglog`)
+    }
+
+    this.debuglog = require('util').debuglog(options.namespace)
     // handle optional second parameter (separate file for stderr)
     super(toWritable(out, options), err ? toWritable(err, options) : undefined)
   }
   common (level, prefix, method, ...args) {
-    process.env.DEBUG && console.log(...args)
+    if (process.env.NODE_DEBUG.toLowerCase() === 'true') {
+      console.log(...args)
+    } else {
+      this.debuglog(...args)
+    }
     if (logl < level) return
     args.unshift(prefix, new Date(Date.now() - timezoneOffset).toISOString())
     super[method](...args)
