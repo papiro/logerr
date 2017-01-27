@@ -29,13 +29,13 @@ class Log extends console.Console {
     if (!options.namespace || typeof options.namespace !== 'string') {
       throw new Error(`log for ${out} missing a valid <String> namespace for util.debuglog`)
     }
-
-    this.debuglog = require('util').debuglog(options.namespace)
     // handle optional second parameter (separate file for stderr)
     super(toWritable(out, options), err ? toWritable(err, options) : undefined)
+
+    this.debuglog = require('util').debuglog(options.namespace)
   }
   common (level, prefix, method, ...args) {
-    if (process.env.NODE_DEBUG.toLowerCase() === 'true') {
+    if (process.env.NODE_DEBUG && process.env.NODE_DEBUG.toLowerCase() === 'true') {
       console.log(...args)
     } else {
       this.debuglog(...args)
