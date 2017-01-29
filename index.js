@@ -43,8 +43,8 @@ class Log extends console.Console {
     } else {
       this.debuglog(...args)
     }
-    debug(`is the global logLevel (${logl}) <= the level of this log type? (${method}:::${level})`)
-    if (logl <= level) return
+    debug(`is the global logLevel (${logl}) >= the level of this log type? (${method}:::${level})`)
+    if (logl >= level) return
     args.unshift(prefix, new Date(Date.now() - timezoneOffset).toISOString())
     super[method](...args)
   }
