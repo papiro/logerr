@@ -75,7 +75,7 @@ class SparseLog extends Log {
   constructor (...args) {
     super(...args)
   }
-  write ()
+  write () {}
 }
 
 // let logl, root
