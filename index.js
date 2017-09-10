@@ -1,11 +1,14 @@
 'use strict'
 
 const 
-  fs = require('fs'), stream = require('stream'), path = require('path'), util = require('util')
+  fs = require('fs'), 
+  stream = require('stream'), 
+  path = require('path'), 
+  util = require('util')
+,
+  timezoneOffset = new Date().getTimezoneOffset() * 60000
 ,
   debug = util.debuglog('logerr')
-,
-  timezoneOffset = (new Date()).getTimezoneOffset() * 60000
 ;
 
 let logl, root
@@ -35,17 +38,13 @@ class Log extends console.Console {
     // handle optional second parameter (separate file for stderr)
     super(toWritable(out, options), err ? toWritable(err, options) : undefined)
 
-    this.debuglog = require('util').debuglog(options.namespace)
+    this.debug = require('util').debuglog(options.namespace)
   }
   common (level, prefix, method, ...args) {
-    if (process.env.NODE_DEBUG && process.env.NODE_DEBUG.toLowerCase() === 'true') {
-      console.log(...args)
-    } else {
-      this.debuglog(...args)
-    }
     debug(`is the global logLevel (${logl}) >= the level of this log type? (${method}:::${level})`)
-    if (logl >= level) return
     args.unshift(prefix, new Date(Date.now() - timezoneOffset).toISOString())
+    this.debug(...args)
+    if (logl >= level) return
     super[method](...args)
   }
   log (...args) {
