@@ -1,1 +1,0 @@
-### logerr extends [Node's console.Console](https://nodejs.org/dist/latest-v7.x/docs/api/console.html#console_class_console) class but allows you to set an environment variable (process.env) of DEBUG to true to switch on logging to stdout/stderr as well.
